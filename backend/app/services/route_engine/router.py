@@ -37,7 +37,7 @@ async def assign_route(
     if not service.validate_mumbai_coordinates(body.destination):
         raise OutsideMumbaiError()
 
-    routes = await service.get_or_create_routes(body.origin, body.destination, db)
+    routes = await service.get_or_create_routes(body.origin, body.destination, db, body.departure_time)
     assignment, assigned_route, other_routes = await service.assign_best_route(
         routes, user.id, body.origin, body.destination, db
     )

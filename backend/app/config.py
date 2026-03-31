@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     # External APIs
     google_routes_api_key: str = ""
     mapbox_access_token: str = ""
+    here_api_key: str = ""
+
+    # Routing provider: "google", "mapbox", "here", "mock", or "" (auto-detect)
+    routing_provider: str = ""
 
     # XRP
     xrpl_network_url: str = "wss://s.altnet.rippletest.net:51233"  # testnet

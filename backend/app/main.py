@@ -51,3 +51,16 @@ app.include_router(user_router, prefix=f"{settings.api_v1_prefix}/users", tags=[
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "leadme"}
+
+
+@app.get("/health/providers")
+async def provider_health():
+    """Check which routing provider is active and its health status."""
+    from app.providers.routing.registry import get_routing_provider
+
+    provider = get_routing_provider()
+    healthy = await provider.health_check()
+    return {
+        "routing_provider": provider.name,
+        "healthy": healthy,
+    }

@@ -57,12 +57,16 @@ async def get_or_create_routes(
     origin: LatLng,
     destination: LatLng,
     db: AsyncSession,
+    departure_time: datetime | None = None,
 ) -> list[Route]:
-    """Fetch existing routes or create mock routes for the origin-destination pair.
+    """Fetch routes via the configured routing provider, with DB caching.
 
-    In production, this calls Google Routes API to get real alternatives.
-    For MVP, we generate synthetic routes based on the coordinates.
+    Uses the provider adapter (Google, Mapbox, HERE, or mock) to get
+    route alternatives, then caches them in the database.
     """
+    from app.providers.routing.base import LatLng as ProviderLatLng, RoutingRequest
+    from app.providers.routing.registry import get_routing_provider
+
     # Check for existing cached routes (within ~500m of origin/destination)
     tolerance = 0.005  # ~500m
     result = await db.execute(
@@ -77,23 +81,30 @@ async def get_or_create_routes(
     if existing:
         return existing
 
-    # Generate mock routes (replace with Google Routes API call)
-    # Calculate approximate distance using simple Euclidean (good enough for mock)
-    lat_diff = abs(destination.lat - origin.lat)
-    lng_diff = abs(destination.lng - origin.lng)
-    approx_km = ((lat_diff * 111) ** 2 + (lng_diff * 85) ** 2) ** 0.5  # rough km
+    # Fetch routes from the configured provider
+    provider = get_routing_provider()
+    routing_request = RoutingRequest(
+        origin=ProviderLatLng(lat=origin.lat, lng=origin.lng),
+        destination=ProviderLatLng(lat=destination.lat, lng=destination.lng),
+        departure_time=departure_time,
+        alternatives=True,
+        max_alternatives=settings.max_alternative_routes,
+        traffic_aware=True,
+    )
+    response = await provider.get_routes(routing_request)
 
+    # Convert provider response to DB models
     routes = []
-    for i in range(min(settings.max_alternative_routes, 3)):
-        detour_factor = 1.0 + (i * 0.08)  # each alternative is ~8% longer
+    for route_option in response.routes:
         route = Route(
             origin_lat=origin.lat,
             origin_lng=origin.lng,
             destination_lat=destination.lat,
             destination_lng=destination.lng,
-            distance_km=round(approx_km * detour_factor, 1),
-            base_duration_min=round(approx_km * detour_factor * 3.5, 0),  # ~3.5 min/km in Mumbai
-            capacity_estimate=1000 + (i * 500),  # wider roads for alternative routes
+            polyline=route_option.polyline,
+            distance_km=route_option.distance_km,
+            base_duration_min=route_option.duration_in_traffic_min or route_option.duration_min,
+            capacity_estimate=1000,  # TODO: estimate from road type
         )
         db.add(route)
         routes.append(route)
