@@ -92,9 +92,9 @@ npm run dev
 ## API Documentation
 
 Once the backend is running, visit:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-- OpenAPI spec: http://localhost:8000/openapi.json
+- Swagger UI: http://localhost:6800/docs
+- ReDoc: http://localhost:6800/redoc
+- OpenAPI spec: http://localhost:6800/openapi.json
 
 ## License
 
