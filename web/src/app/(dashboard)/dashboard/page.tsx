@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { getBalance, getStreaks, assignRoute } from "@/lib/api";
 import { getToken, getUser } from "@/lib/auth";
+import MapView from "@/lib/maps";
+import { useRouteTracking } from "@/hooks/useRouteTracking";
 
 type Balance = {
   route_coins: number;
@@ -31,6 +33,12 @@ type Assignment = {
   };
 };
 
+// Mumbai center
+const MUMBAI_CENTER = { lat: 19.076, lng: 72.877 };
+// Demo route: Andheri → CST
+const DEMO_ORIGIN = { lat: 19.1196, lng: 72.8464 };
+const DEMO_DEST = { lat: 18.9398, lng: 72.8355 };
+
 export default function DashboardPage() {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [streak, setStreak] = useState<Streak | null>(null);
@@ -39,6 +47,8 @@ export default function DashboardPage() {
 
   const user = getUser();
   const token = getToken();
+
+  const tracking = useRouteTracking(assignment?.assignment_id ?? null);
 
   useEffect(() => {
     if (!token) return;
@@ -50,12 +60,7 @@ export default function DashboardPage() {
     if (!token) return;
     setLoading(true);
     try {
-      // Demo: Andheri to CST
-      const result = await assignRoute(
-        { lat: 19.1196, lng: 72.8464 },
-        { lat: 18.9398, lng: 72.8355 },
-        token,
-      );
+      const result = await assignRoute(DEMO_ORIGIN, DEMO_DEST, token);
       setAssignment(result);
     } catch (err) {
       console.error(err);
@@ -99,7 +104,24 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Quick route assignment */}
+      {/* Map */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <MapView
+          config={{ center: MUMBAI_CENTER, zoom: 12 }}
+          markers={
+            assignment
+              ? [
+                  { id: "origin", position: DEMO_ORIGIN, label: "Andheri", color: "#10B981" },
+                  { id: "dest", position: DEMO_DEST, label: "CST", color: "#EF4444" },
+                ]
+              : []
+          }
+          traffic={{ enabled: true }}
+          className="w-full h-[350px]"
+        />
+      </div>
+
+      {/* Quick route assignment + tracking */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="font-semibold text-lg mb-4">Quick Route</h2>
         {!assignment ? (
@@ -116,7 +138,7 @@ export default function DashboardPage() {
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Route assigned</span>
               <LoadBadge status={assignment.assigned_route.load_status} />
@@ -147,6 +169,77 @@ export default function DashboardPage() {
                 bonus for helping balance traffic
               </p>
             )}
+
+            {/* GPS Tracking controls */}
+            <div className="border-t border-gray-100 pt-4">
+              {tracking.state === "idle" && (
+                <button
+                  onClick={tracking.start}
+                  className="w-full rounded-lg bg-blue-600 text-white py-2.5 font-medium hover:bg-blue-700 transition"
+                >
+                  Start Tracking
+                </button>
+              )}
+
+              {tracking.state === "requesting_permission" && (
+                <p className="text-sm text-gray-500 text-center">
+                  Requesting location permission...
+                </p>
+              )}
+
+              {tracking.isTracking && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-sm text-green-700 font-medium">
+                        Tracking active
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {tracking.positionCount} updates sent
+                    </span>
+                  </div>
+                  {tracking.progress > 0 && (
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-emerald-500 h-2 rounded-full transition-all"
+                        style={{ width: `${tracking.progress}%` }}
+                      />
+                    </div>
+                  )}
+                  <button
+                    onClick={tracking.complete}
+                    className="w-full rounded-lg bg-emerald-600 text-white py-2.5 font-medium hover:bg-emerald-700 transition"
+                  >
+                    Complete Route
+                  </button>
+                </div>
+              )}
+
+              {tracking.state === "completed" && tracking.result && (
+                <div className="bg-emerald-50 rounded-lg p-4 text-center space-y-2">
+                  <p className="text-lg font-bold text-emerald-700">
+                    +{tracking.result.coinsEarned} coins earned!
+                  </p>
+                  <p className="text-sm text-emerald-600">
+                    Streak: {tracking.result.streakDay} days |
+                    Compliance: {(tracking.result.complianceScore * 100).toFixed(0)}%
+                  </p>
+                  {tracking.result.badgesEarned.length > 0 && (
+                    <p className="text-sm font-medium text-amber-600">
+                      New badges: {tracking.result.badgesEarned.join(", ")}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {tracking.state === "error" && (
+                <p className="text-sm text-red-500 text-center">
+                  {tracking.error}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -29,6 +29,18 @@ class Settings(BaseSettings):
     # Routing provider: "google", "mapbox", "here", "mock", or "" (auto-detect)
     routing_provider: str = ""
 
+    # SMS provider: "twilio", "msg91", "console", or "" (auto-detect)
+    sms_provider: str = ""
+
+    # Twilio
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
+
+    # MSG91
+    msg91_auth_key: str = ""
+    msg91_template_id: str = ""
+
     # XRP
     xrpl_network_url: str = "wss://s.altnet.rippletest.net:51233"  # testnet
     xrp_coins_per_xrp: int = 10000  # 10,000 Route Coins = 1 XRP

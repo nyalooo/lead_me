@@ -94,3 +94,18 @@ async def delete_schedule(
     if schedule is None:
         raise ScheduleNotFoundError()
     await service.delete_schedule(schedule, db)
+
+
+@router.post("/pre-assign")
+async def trigger_pre_assignment(
+    _user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Manually trigger pre-assignment for today's schedules.
+
+    Normally runs as a cron job, but can be triggered via API for testing.
+    """
+    from app.services.scheduler.jobs import pre_assign_routes
+
+    result = await pre_assign_routes(db=db)
+    return result

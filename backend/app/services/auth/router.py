@@ -13,9 +13,14 @@ router = APIRouter()
 
 @router.post("/request-otp")
 async def request_otp_endpoint(body: OTPRequest):
+    from app.config import settings
+
     otp = await request_otp(body.phone)
-    # In dev mode, return the OTP for testing. Remove in production.
-    return {"message": "OTP sent", "expires_in": 300, "dev_otp": otp}
+    response = {"message": "OTP sent", "expires_in": settings.otp_expire_seconds}
+    # Only expose OTP in dev mode (console SMS provider)
+    if settings.debug:
+        response["dev_otp"] = otp
+    return response
 
 
 @router.post("/verify-otp", response_model=TokenResponse)

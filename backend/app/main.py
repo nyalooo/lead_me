@@ -19,6 +19,15 @@ async def lifespan(app: FastAPI):
     # Startup: create tables (dev only; use alembic in production)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    # Seed initial data
+    from app.core.database import async_session
+    from app.core.seed import seed_all
+    async with async_session() as session:
+        result = await seed_all(session)
+        await session.commit()
+        if result.get("badges_inserted"):
+            import logging
+            logging.getLogger(__name__).info(f"Seeded {result['badges_inserted']} badges")
     yield
     # Shutdown: dispose engine
     await engine.dispose()
