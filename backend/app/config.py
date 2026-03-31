@@ -41,9 +41,27 @@ class Settings(BaseSettings):
     msg91_auth_key: str = ""
     msg91_template_id: str = ""
 
-    # XRP
+    # Crypto provider: "xrp", "sol", "eth", "mock", or "" (auto-detect)
+    crypto_provider: str = ""
+
+    # Platform wallet (used to send rewards — NEVER expose seed publicly)
+    platform_wallet_address: str = ""
+    platform_wallet_seed: str = ""  # private key / seed for signing
+
+    # XRP (XRPL)
     xrpl_network_url: str = "wss://s.altnet.rippletest.net:51233"  # testnet
+    xrpl_wallet_seed: str = ""  # platform XRP wallet seed
     xrp_coins_per_xrp: int = 10000  # 10,000 Route Coins = 1 XRP
+
+    # Solana (coming soon)
+    solana_rpc_url: str = "https://api.devnet.solana.com"
+    solana_wallet_seed: str = ""
+    sol_coins_per_sol: int = 5000  # 5,000 Route Coins = 1 SOL
+
+    # Ethereum / Polygon (coming soon)
+    eth_rpc_url: str = ""
+    eth_wallet_private_key: str = ""
+    eth_coins_per_eth: int = 50000  # 50,000 Route Coins = 1 ETH
 
     # Route Engine
     max_detour_percent: float = 15.0  # never assign route >15% longer

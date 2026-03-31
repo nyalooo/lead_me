@@ -39,6 +39,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: dev-secret-change-in-production
       DEBUG: "true"
+      CRYPTO_PROVIDER: mock
     depends_on:
       db:
         condition: service_healthy
@@ -58,6 +59,23 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:6800/api/v1
     depends_on:
       - backend
+
+  # React Native mobile (Expo dev server)
+  # Optional: only needed for mobile development
+  # Run with: docker compose up mobile
+  mobile:
+    build:
+      context: ./mobile
+      dockerfile: Dockerfile
+    ports:
+      - "6081:8081"
+      - "6019:19000"
+    environment:
+      EXPO_DEVTOOLS_LISTEN_ADDRESS: "0.0.0.0"
+    depends_on:
+      - backend
+    profiles:
+      - mobile  # only starts with: docker compose --profile mobile up
 
 volumes:
   postgres_data:

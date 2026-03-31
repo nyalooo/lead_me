@@ -10,6 +10,7 @@ from app.core.database import engine, Base
 from app.services.route_engine.router import router as route_router
 from app.services.scheduler.router import router as schedule_router
 from app.services.rewards.router import router as reward_router
+from app.services.cashout.router import router as cashout_router
 from app.services.auth.router import router as auth_router
 from app.services.users.router import router as user_router
 
@@ -54,6 +55,7 @@ app.include_router(auth_router, prefix=f"{settings.api_v1_prefix}/auth", tags=["
 app.include_router(route_router, prefix=f"{settings.api_v1_prefix}/routes", tags=["routes"])
 app.include_router(schedule_router, prefix=f"{settings.api_v1_prefix}/schedules", tags=["schedules"])
 app.include_router(reward_router, prefix=f"{settings.api_v1_prefix}/rewards", tags=["rewards"])
+app.include_router(cashout_router, prefix=f"{settings.api_v1_prefix}/cashout", tags=["cashout"])
 app.include_router(user_router, prefix=f"{settings.api_v1_prefix}/users", tags=["users"])
 
 
@@ -64,12 +66,21 @@ async def health_check():
 
 @app.get("/health/providers")
 async def provider_health():
-    """Check which routing provider is active and its health status."""
+    """Check which providers are active and their health status."""
     from app.providers.routing.registry import get_routing_provider
+    from app.providers.crypto.registry import get_crypto_provider
 
-    provider = get_routing_provider()
-    healthy = await provider.health_check()
+    routing = get_routing_provider()
+    crypto = get_crypto_provider()
+
+    routing_healthy = await routing.health_check()
+    crypto_healthy = await crypto.health_check()
+
     return {
-        "routing_provider": provider.name,
-        "healthy": healthy,
+        "routing_provider": routing.name,
+        "routing_healthy": routing_healthy,
+        "crypto_provider": crypto.name,
+        "crypto_currency": crypto.currency_code,
+        "crypto_network": crypto.network_name,
+        "crypto_healthy": crypto_healthy,
     }

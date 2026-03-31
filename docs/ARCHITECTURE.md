@@ -11,16 +11,20 @@ LeadMe uses a client-server architecture with a clear separation between the web
 └──────────────┘    │                          │    └────────────┘
                     │  ┌─────────────────────┐ │
 ┌──────────────┐    │  │ Route Engine         │ │    ┌────────────┐
-│  Mobile App  │───▶│  │ (weighted balancing) │ │───▶│ Google     │
-│  (Phase 2)   │    │  └─────────────────────┘ │    │ Routes API │
-└──────────────┘    │  ┌─────────────────────┐ │    └────────────┘
-                    │  │ Scheduler Service    │ │
+│  Mobile App  │───▶│  │ (weighted balancing) │ │───▶│ Routing    │
+│ (React Native│    │  └─────────────────────┘ │    │ Providers  │
+│  + Expo)     │    │  ┌─────────────────────┐ │    └────────────┘
+└──────────────┘    │  │ Scheduler Service    │ │
                     │  │ (cron + pre-assign)  │ │    ┌────────────┐
-                    │  └─────────────────────┘ │───▶│ Mapbox     │
-                    │  ┌─────────────────────┐ │    └────────────┘
-                    │  │ Reward Service       │ │
-                    │  │ (coins + XRP track)  │ │    ┌────────────┐
-                    │  └─────────────────────┘ │───▶│ XRPL       │
+                    │  └─────────────────────┘ │───▶│ SMS        │
+                    │  ┌─────────────────────┐ │    │ Providers  │
+                    │  │ Reward Service       │ │    └────────────┘
+                    │  │ (coins + streaks)    │ │
+                    │  └─────────────────────┘ │    ┌────────────┐
+                    │  ┌─────────────────────┐ │───▶│ Crypto     │
+                    │  │ Cashout Service      │ │    │ Providers  │
+                    │  │ (coins → crypto)     │ │    │ (XRP/SOL/  │
+                    │  └─────────────────────┘ │    │  ETH/Mock) │
                     └──────────────────────────┘    └────────────┘
 ```
 
@@ -73,8 +77,36 @@ Handles gamification: coins, streaks, badges, tiers, and XRP tracking.
 - Track and apply streak multipliers (3-day: 1.5x, 7-day: 2x, 30-day: 3x)
 - Award badges based on achievement criteria
 - Manage user tier progression (Rookie → Regular → Pro → Legend)
-- Track XRP balance (conversion from Route Coins)
+- Track crypto balance (conversion from Route Coins)
 - Area-wise leaderboard calculations
+
+### 4. Cashout Service (`services/cashout/`)
+
+Handles coin-to-cryptocurrency conversion and wallet management.
+
+**Key responsibilities:**
+- Link/manage user crypto wallets (non-custodial)
+- Estimate and execute cashouts (coins → XRP/SOL/ETH)
+- Apply tier bonuses on cashout (1.0x–1.5x)
+- Enforce minimum cashout threshold (1,000 coins)
+- Enforce 24h cooldown between cashouts
+- Auto-refund coins on failed transfers
+- Full audit trail of all cashout requests
+
+See [CRYPTO.md](CRYPTO.md) for detailed crypto architecture.
+
+## Mobile App (`mobile/`)
+
+React Native (Expo) mobile app for iOS and Android.
+
+**Key advantage over web:** Background GPS tracking via `expo-location` + `expo-task-manager`.
+
+**Structure:**
+- `src/screens/` — Login, Dashboard, Schedule, Leaderboard, Cashout, Profile
+- `src/hooks/useBackgroundLocation.ts` — Background location tracking
+- `src/lib/api.ts` — Same API client as web
+- `src/lib/auth.ts` — Secure token storage via `expo-secure-store`
+- `src/navigation/` — Stack + Tab navigation
 
 **Penalty model (gentle):**
 - Streak reset on missed route (no coin deduction)
@@ -145,7 +177,9 @@ All endpoints are versioned under `/api/v1/`. The API follows REST conventions:
 |---------|---------|-----------|
 | Google Routes API | Traffic-aware routing for Mumbai | $200/mo credit |
 | Mapbox | Map display + traffic layer | 50K loads + 100K directions/mo |
-| XRPL (testnet) | XRP micro-payment tracking | Free (testnet) |
+| XRPL (testnet) | XRP cashout transfers | Free (testnet) |
+| Solana (devnet) | SOL cashout (coming soon) | Free (devnet) |
+| Polygon (testnet) | ETH/MATIC cashout (coming soon) | Free (testnet) |
 
 ## Security Considerations
 

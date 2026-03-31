@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "LeadMe",
+    "slug": "leadme",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#059669"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.leadme.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "LeadMe needs your location to track route compliance and award rewards.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "LeadMe uses background location to track your route even when the app is minimized.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "package": "app.leadme.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#059669"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "LeadMe uses background location to track your route for rewards."
+        }
+      ]
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

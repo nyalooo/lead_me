@@ -15,6 +15,7 @@ from app.services.users.models import User  # noqa: F401
 from app.services.route_engine.models import Route, RouteAssignment, LocationUpdate  # noqa: F401
 from app.services.scheduler.models import Schedule  # noqa: F401
 from app.services.rewards.models import CoinTransaction, Streak, Badge, UserBadge  # noqa: F401
+from app.services.cashout.models import WalletLink, CashoutRequest  # noqa: F401
 
 config = context.config
 
