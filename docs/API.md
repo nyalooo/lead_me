@@ -1,6 +1,6 @@
 # API Reference
 
-Base URL: `http://localhost:8000/api/v1`
+Base URL: `http://localhost:6800/api/v1`
 
 ## Authentication
 
@@ -349,5 +349,184 @@ Get personal statistics.
   "co2_reduced_kg": 15.3,
   "favorite_route": "Andheri → BKC",
   "member_since": "2026-01-15"
+}
+```
+
+---
+
+## Cashout
+
+#### `GET /api/v1/cashout/cryptos`
+List supported cryptocurrencies and their status.
+
+**Response:** `200 OK`
+```json
+{
+  "active_provider": "xrp",
+  "providers": [
+    { "name": "xrp", "currency": "XRP", "status": "active", "label": "XRP Ledger" },
+    { "name": "sol", "currency": "SOL", "status": "coming_soon", "label": "Solana" },
+    { "name": "eth", "currency": "ETH", "status": "coming_soon", "label": "Ethereum / Polygon" }
+  ]
+}
+```
+
+#### `GET /api/v1/cashout/wallets`
+List user's linked crypto wallets.
+
+**Response:** `200 OK`
+```json
+{
+  "wallets": [
+    {
+      "id": "uuid",
+      "currency": "XRP",
+      "address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ",
+      "label": "My Xaman Wallet",
+      "verified": false,
+      "is_primary": true,
+      "created_at": "2026-03-20T10:00:00+05:30"
+    }
+  ]
+}
+```
+
+#### `POST /api/v1/cashout/wallets`
+Link a cryptocurrency wallet.
+
+**Request:**
+```json
+{
+  "currency": "XRP",
+  "address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ",
+  "label": "My Xaman Wallet"
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid",
+  "currency": "XRP",
+  "address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ",
+  "label": "My Xaman Wallet",
+  "verified": false,
+  "is_primary": true,
+  "created_at": "2026-03-20T10:00:00+05:30"
+}
+```
+
+#### `DELETE /api/v1/cashout/wallets/{wallet_id}`
+Remove a linked wallet.
+
+**Response:** `200 OK`
+```json
+{ "ok": true }
+```
+
+#### `POST /api/v1/cashout/estimate`
+Estimate how much crypto you'll receive for a given coin amount.
+
+**Request:**
+```json
+{
+  "coins_amount": 5000,
+  "currency": "XRP"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "coins_amount": 5000,
+  "crypto_amount": 0.55,
+  "currency": "XRP",
+  "tier_bonus": 1.1,
+  "conversion_rate": 10000,
+  "min_cashout_coins": 1000,
+  "eligible": true,
+  "reason": null
+}
+```
+
+**Ineligible example:**
+```json
+{
+  "coins_amount": 500,
+  "crypto_amount": 0.05,
+  "currency": "XRP",
+  "tier_bonus": 1.0,
+  "conversion_rate": 10000,
+  "min_cashout_coins": 1000,
+  "eligible": false,
+  "reason": "Minimum cashout is 1000 Route Coins"
+}
+```
+
+#### `POST /api/v1/cashout/cashout`
+Execute a cashout — convert Route Coins to cryptocurrency.
+
+**Request:**
+```json
+{
+  "coins_amount": 5000,
+  "currency": "XRP",
+  "wallet_id": null
+}
+```
+
+`wallet_id` is optional — uses primary wallet for the currency if omitted.
+
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid",
+  "coins_amount": 5000,
+  "crypto_amount": 0.55,
+  "currency": "XRP",
+  "tier_bonus": 1.1,
+  "wallet_address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ",
+  "status": "completed",
+  "tx_hash": "A1B2C3D4E5F6...",
+  "explorer_url": "https://testnet.xrpl.org/transactions/A1B2C3D4E5F6...",
+  "failure_reason": null,
+  "created_at": "2026-04-01T10:30:00+05:30",
+  "completed_at": "2026-04-01T10:30:05+05:30"
+}
+```
+
+**Error responses:**
+- `400` — Insufficient balance, minimum not met, no wallet linked, currency unavailable
+- `400` — Cooldown active (24h between cashouts)
+
+#### `GET /api/v1/cashout/history`
+Get cashout history.
+
+**Query params:** `?limit=20&offset=0`
+
+**Response:** `200 OK`
+```json
+{
+  "cashouts": [
+    {
+      "id": "uuid",
+      "coins_amount": 5000,
+      "crypto_amount": 0.55,
+      "currency": "XRP",
+      "tier_bonus": 1.1,
+      "wallet_address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ",
+      "status": "completed",
+      "tx_hash": "A1B2C3D4E5F6...",
+      "explorer_url": "https://testnet.xrpl.org/transactions/A1B2C3D4E5F6...",
+      "created_at": "2026-04-01T10:30:00+05:30",
+      "completed_at": "2026-04-01T10:30:05+05:30"
+    }
+  ],
+  "total": 3,
+  "total_cashed_out": {
+    "XRP": 1.65,
+    "SOL": 0.0,
+    "ETH": 0.0
+  }
 }
 ```

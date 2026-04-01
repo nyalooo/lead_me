@@ -139,11 +139,16 @@ Once the backend is running:
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md) — System design, data flow, DB schema
-- [Crypto Integration](docs/CRYPTO.md) — Multi-crypto adapter, cashout flow, wallet management
-- [Gamification](docs/GAMIFICATION.md) — Rewards, streaks, badges, tiers
-- [API Reference](docs/API.md) — Full endpoint documentation
-- [Providers](docs/PROVIDERS.md) — Adapter pattern for external services
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | System design, data flow, service layers |
+| [API Reference](docs/API.md) | Full endpoint documentation with examples |
+| [Database](docs/DATABASE.md) | Schema details, all tables, migrations, seeding |
+| [Crypto Integration](docs/CRYPTO.md) | Multi-crypto adapter, cashout flow, wallet management |
+| [Gamification](docs/GAMIFICATION.md) | Rewards, streaks, badges, tiers, penalties |
+| [Providers](docs/PROVIDERS.md) | Adapter pattern for routing, SMS, crypto, maps |
+| [Mobile App](docs/MOBILE.md) | React Native guide, background GPS, screens |
+| [Development](docs/DEVELOPMENT.md) | Setup, workflow, code standards, testing, Docker |
 
 ## License
 
