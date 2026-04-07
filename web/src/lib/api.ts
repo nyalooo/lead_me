@@ -238,3 +238,112 @@ export function getUserStats(token: string) {
     member_since: string;
   }>("/users/me/stats", { token });
 }
+
+// --- Cashout ---
+
+export function getSupportedCryptos(token: string) {
+  return request<{
+    active_provider: string;
+    providers: Array<{
+      name: string;
+      currency: string;
+      status: string;
+      label: string;
+    }>;
+  }>("/cashout/cryptos", { token });
+}
+
+export function getWallets(token: string) {
+  return request<{
+    wallets: Array<{
+      id: string;
+      currency: string;
+      address: string;
+      label: string;
+      verified: boolean;
+      is_primary: boolean;
+      created_at: string;
+    }>;
+  }>("/cashout/wallets", { token });
+}
+
+export function linkWallet(currency: string, address: string, label: string, token: string) {
+  return request<{
+    id: string;
+    currency: string;
+    address: string;
+    label: string;
+    verified: boolean;
+    is_primary: boolean;
+    created_at: string;
+  }>("/cashout/wallets", {
+    method: "POST",
+    body: { currency, address, label },
+    token,
+  });
+}
+
+export function deleteWallet(walletId: string, token: string) {
+  return request<{ ok: boolean }>(`/cashout/wallets/${walletId}`, {
+    method: "DELETE",
+    token,
+  });
+}
+
+export function estimateCashout(coinsAmount: number, currency: string, token: string) {
+  return request<{
+    coins_amount: number;
+    crypto_amount: number;
+    currency: string;
+    tier_bonus: number;
+    conversion_rate: number;
+    min_cashout_coins: number;
+    eligible: boolean;
+    reason: string | null;
+  }>("/cashout/estimate", {
+    method: "POST",
+    body: { coins_amount: coinsAmount, currency },
+    token,
+  });
+}
+
+export function doCashout(coinsAmount: number, currency: string, token: string, walletId?: string) {
+  return request<{
+    id: string;
+    coins_amount: number;
+    crypto_amount: number;
+    currency: string;
+    tier_bonus: number;
+    wallet_address: string;
+    status: string;
+    tx_hash: string | null;
+    explorer_url: string | null;
+    failure_reason: string | null;
+    created_at: string;
+    completed_at: string | null;
+  }>("/cashout/cashout", {
+    method: "POST",
+    body: { coins_amount: coinsAmount, currency, wallet_id: walletId },
+    token,
+  });
+}
+
+export function getCashoutHistory(token: string, limit = 20, offset = 0) {
+  return request<{
+    cashouts: Array<{
+      id: string;
+      coins_amount: number;
+      crypto_amount: number;
+      currency: string;
+      tier_bonus: number;
+      wallet_address: string;
+      status: string;
+      tx_hash: string | null;
+      explorer_url: string | null;
+      created_at: string;
+      completed_at: string | null;
+    }>;
+    total: number;
+    total_cashed_out: Record<string, number>;
+  }>(`/cashout/history?limit=${limit}&offset=${offset}`, { token });
+}
