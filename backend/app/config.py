@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     eth_wallet_private_key: str = ""
     eth_coins_per_eth: int = 50000  # 50,000 Route Coins = 1 ETH
 
+    # Referrals
+    referral_bonus_referrer: int = 200  # coins for referrer when referred qualifies
+    referral_bonus_referred: int = 100  # coins for new user on signup with code
+    referral_qualify_routes: int = 3  # referred must complete N routes to qualify
+    app_base_url: str = "https://leadme.app"  # for share URLs
+
     # Route Engine
     max_detour_percent: float = 15.0  # never assign route >15% longer
     max_alternative_routes: int = 3

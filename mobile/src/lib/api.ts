@@ -113,6 +113,35 @@ export const updateProfile = (data: any) =>
   request<any>('/users/me', { method: 'PUT', body: JSON.stringify(data) });
 export const getUserStats = () => request<any>('/users/me/stats');
 
+// --- Social / Referrals ---
+export const getReferralCode = () => request<any>('/social/referral-code');
+export const getReferralStats = () => request<any>('/social/referral-stats');
+export const applyReferralCode = (code: string) =>
+  request<{ applied: boolean; message: string; bonus_coins: number }>(
+    '/social/apply-referral',
+    { method: 'POST', body: JSON.stringify({ code }) },
+  );
+export const trackShare = (channel: string, contentType: string, contentId?: string) =>
+  request<{ shared: boolean; share_url: string; message: string }>(
+    '/social/share',
+    { method: 'POST', body: JSON.stringify({ channel, content_type: contentType, content_id: contentId }) },
+  );
+
+// --- Challenges ---
+export const getChallenges = () =>
+  request<{ active: any[]; upcoming: any[]; completed: any[] }>('/challenges');
+export const getChallenge = (id: string) => request<any>(`/challenges/${id}`);
+export const joinChallenge = (id: string) =>
+  request<{ challenge_id: string; joined: boolean; message: string }>(
+    `/challenges/${id}/join`,
+    { method: 'POST' },
+  );
+export const claimChallengeReward = (id: string) =>
+  request<{ claimed: boolean; message: string; coins_earned?: number; xrp_earned?: number }>(
+    `/challenges/${id}/claim`,
+    { method: 'POST' },
+  );
+
 // --- Types ---
 export interface LatLng {
   lat: number;

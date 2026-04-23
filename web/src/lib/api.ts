@@ -347,3 +347,101 @@ export function getCashoutHistory(token: string, limit = 20, offset = 0) {
     total_cashed_out: Record<string, number>;
   }>(`/cashout/history?limit=${limit}&offset=${offset}`, { token });
 }
+
+// --- Challenges ---
+
+export function getChallenges(token: string) {
+  return request<{
+    active: ChallengeItem[];
+    upcoming: ChallengeItem[];
+    completed: ChallengeItem[];
+  }>("/challenges", { token });
+}
+
+export function getChallenge(challengeId: string, token: string) {
+  return request<ChallengeItem>(`/challenges/${challengeId}`, { token });
+}
+
+export function joinChallenge(challengeId: string, token: string) {
+  return request<{ challenge_id: string; joined: boolean; message: string }>(
+    `/challenges/${challengeId}/join`,
+    { method: "POST", token },
+  );
+}
+
+export function claimChallengeReward(challengeId: string, token: string) {
+  return request<{
+    claimed: boolean;
+    message: string;
+    coins_earned?: number;
+    xrp_earned?: number;
+  }>(`/challenges/${challengeId}/claim`, { method: "POST", token });
+}
+
+// --- Social / Referrals ---
+
+export function getReferralCode(token: string) {
+  return request<{
+    code: string;
+    uses: number;
+    max_uses: number | null;
+    active: boolean;
+    share_url: string;
+  }>("/social/referral-code", { token });
+}
+
+export function getReferralStats(token: string) {
+  return request<{
+    referral_code: string;
+    total_referrals: number;
+    qualified_referrals: number;
+    total_coins_earned: number;
+    referrals: Array<{
+      referred_display_name: string;
+      qualified: boolean;
+      coins_earned: number;
+      created_at: string;
+    }>;
+  }>("/social/referral-stats", { token });
+}
+
+export function applyReferralCode(code: string, token: string) {
+  return request<{ applied: boolean; message: string; bonus_coins: number }>(
+    "/social/apply-referral",
+    { method: "POST", body: { code }, token },
+  );
+}
+
+export function trackShare(
+  channel: "whatsapp" | "copy_link" | "twitter",
+  contentType: "referral" | "achievement" | "challenge" | "route",
+  token: string,
+  contentId?: string,
+) {
+  return request<{ shared: boolean; share_url: string; message: string }>(
+    "/social/share",
+    { method: "POST", body: { channel, content_type: contentType, content_id: contentId }, token },
+  );
+}
+
+export type ChallengeItem = {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  category: string;
+  goal_type: string;
+  goal_value: number;
+  goal_area: string | null;
+  reward_coins: number;
+  reward_xrp: number;
+  reward_badge_id: string | null;
+  starts_at: string;
+  ends_at: string;
+  max_participants: number | null;
+  active: boolean;
+  participant_count: number;
+  user_joined: boolean;
+  user_progress: number;
+  user_completed: boolean;
+};

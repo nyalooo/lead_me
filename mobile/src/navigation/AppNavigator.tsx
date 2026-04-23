@@ -21,6 +21,7 @@ import LoginScreen from '../screens/LoginScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import ScheduleScreen from '../screens/ScheduleScreen';
 import LeaderboardScreen from '../screens/LeaderboardScreen';
+import ChallengesScreen from '../screens/ChallengesScreen';
 import CashoutScreen from '../screens/CashoutScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -57,6 +58,13 @@ function MainTabs() {
         component={ScheduleScreen}
         options={{
           tabBarIcon: ({ color }) => <TabIcon label="📅" />,
+        }}
+      />
+      <Tab.Screen
+        name="Challenges"
+        component={ChallengesScreen}
+        options={{
+          tabBarIcon: ({ color }) => <TabIcon label="🎯" />,
         }}
       />
       <Tab.Screen

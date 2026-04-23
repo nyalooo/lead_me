@@ -354,6 +354,316 @@ Get personal statistics.
 
 ---
 
+## Challenges
+
+#### `GET /api/v1/challenges`
+List all challenges grouped by active/upcoming/completed, with user progress.
+
+**Response:** `200 OK`
+```json
+{
+  "active": [
+    {
+      "id": "uuid",
+      "title": "Monsoon Week Challenge",
+      "description": "Complete 10 routes during monsoon week",
+      "type": "weekly",
+      "category": "monsoon",
+      "goal_type": "routes_count",
+      "goal_value": 10,
+      "goal_area": null,
+      "reward_coins": 500,
+      "reward_xrp": 0.5,
+      "reward_badge_id": null,
+      "starts_at": "2026-04-20T00:00:00+05:30",
+      "ends_at": "2026-04-27T23:59:59+05:30",
+      "max_participants": null,
+      "active": true,
+      "participant_count": 124,
+      "user_joined": true,
+      "user_progress": 7,
+      "user_completed": false
+    }
+  ],
+  "upcoming": [],
+  "completed": []
+}
+```
+
+#### `GET /api/v1/challenges/{challenge_id}`
+Get a single challenge with user progress.
+
+**Response:** `200 OK` — same shape as a single item from the list above.
+
+#### `POST /api/v1/challenges/{challenge_id}/join`
+Join an active challenge.
+
+**Response:** `200 OK`
+```json
+{
+  "challenge_id": "uuid",
+  "joined": true,
+  "message": "Joined successfully"
+}
+```
+
+**Error cases:**
+```json
+{ "challenge_id": "uuid", "joined": false, "message": "Challenge has ended" }
+{ "challenge_id": "uuid", "joined": false, "message": "Challenge is full" }
+{ "challenge_id": "uuid", "joined": true, "message": "Already joined" }
+```
+
+#### `POST /api/v1/challenges/{challenge_id}/claim`
+Claim reward for a completed challenge.
+
+**Response:** `200 OK`
+```json
+{
+  "claimed": true,
+  "message": "Reward claimed!",
+  "coins_earned": 500,
+  "xrp_earned": 0.5
+}
+```
+
+#### `POST /api/v1/challenges`
+Create a new challenge (admin).
+
+**Request:**
+```json
+{
+  "title": "Flash Peak Hour Sprint",
+  "description": "Complete 5 routes during peak hours this week",
+  "type": "flash",
+  "category": "peak",
+  "goal_type": "peak_routes",
+  "goal_value": 5,
+  "reward_coins": 1000,
+  "reward_xrp": 1.0,
+  "starts_at": "2026-04-23T00:00:00+05:30",
+  "ends_at": "2026-04-24T23:59:59+05:30",
+  "max_participants": 50
+}
+```
+
+**Response:** `201 Created` — returns the created challenge.
+
+---
+
+## Social / Referrals
+
+#### `GET /api/v1/social/referral-code`
+Get (or create) the current user's referral code.
+
+**Response:** `200 OK`
+```json
+{
+  "code": "LM-A3B2C1",
+  "uses": 5,
+  "max_uses": null,
+  "active": true,
+  "share_url": "https://leadme.app/join?ref=LM-A3B2C1"
+}
+```
+
+#### `GET /api/v1/social/referral-stats`
+Get referral statistics and history.
+
+**Response:** `200 OK`
+```json
+{
+  "referral_code": "LM-A3B2C1",
+  "total_referrals": 3,
+  "qualified_referrals": 2,
+  "total_coins_earned": 400,
+  "referrals": [
+    {
+      "referred_display_name": "Rohan M.",
+      "qualified": true,
+      "coins_earned": 200,
+      "created_at": "2026-04-01T10:00:00+05:30"
+    }
+  ]
+}
+```
+
+#### `POST /api/v1/social/apply-referral`
+Apply a referral code (for new users).
+
+**Request:**
+```json
+{ "code": "LM-A3B2C1" }
+```
+
+**Response:** `200 OK`
+```json
+{ "applied": true, "message": "Referral code applied!", "bonus_coins": 100 }
+```
+
+#### `POST /api/v1/social/share`
+Track a social share action and get share content.
+
+**Request:**
+```json
+{
+  "channel": "whatsapp",
+  "content_type": "referral",
+  "content_id": null
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "shared": true,
+  "share_url": "https://leadme.app/join?ref=LM-A3B2C1",
+  "message": "Join LeadMe and earn crypto for your commute! Use my code: LM-A3B2C1"
+}
+```
+
+---
+
+## Sponsors
+
+#### `GET /api/v1/sponsors/pools`
+List all reward pools grouped by active/upcoming/depleted.
+
+**Response:** `200 OK`
+```json
+{
+  "active": [
+    {
+      "id": "uuid",
+      "sponsor_id": "uuid",
+      "sponsor_name": "Mumbai Traffic Corp",
+      "title": "Andheri Green Route Fund",
+      "description": "Extra XRP for eco-compliant routes through Andheri",
+      "currency": "XRP",
+      "total_amount": 100.0,
+      "remaining_amount": 75.5,
+      "reward_per_route": 0.05,
+      "target_area": "Andheri",
+      "min_compliance": 0.85,
+      "starts_at": "2026-04-01T00:00:00+05:30",
+      "ends_at": "2026-04-30T23:59:59+05:30",
+      "active": true,
+      "total_payouts": 490
+    }
+  ],
+  "upcoming": [],
+  "depleted": []
+}
+```
+
+#### `GET /api/v1/sponsors/my-payouts`
+Get the current user's sponsor payout history.
+
+#### `POST /api/v1/sponsors/sponsors`
+Create a new sponsor (admin).
+
+#### `POST /api/v1/sponsors/pools`
+Create a new reward pool (admin).
+
+---
+
+## NFT Badges
+
+#### `GET /api/v1/nft`
+List all NFT badges for the current user.
+
+**Response:** `200 OK`
+```json
+{
+  "nfts": [
+    {
+      "id": "uuid",
+      "badge_id": "traffic_hero",
+      "badge_name": "Traffic Hero",
+      "chain": "xrpl",
+      "token_id": "ABC123DEF456",
+      "tx_hash": "NFT_ABC123DEF456",
+      "wallet_address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ",
+      "explorer_url": "https://testnet.xrpl.org/nft/ABC123DEF456",
+      "status": "minted",
+      "created_at": "2026-04-15T10:00:00+05:30",
+      "minted_at": "2026-04-15T10:00:05+05:30"
+    }
+  ],
+  "total": 1
+}
+```
+
+#### `POST /api/v1/nft/mint`
+Mint an NFT for an earned badge.
+
+**Request:**
+```json
+{
+  "user_badge_id": "uuid",
+  "chain": "xrpl",
+  "wallet_address": "rN7n3473SaZBCG4dFL83w7p1W6cfJRrcmZ"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "nft_id": "uuid",
+  "status": "minted",
+  "tx_hash": "NFT_ABC123",
+  "explorer_url": "https://testnet.xrpl.org/nft/ABC123",
+  "message": "NFT minted on xrpl!"
+}
+```
+
+#### `GET /api/v1/nft/{nft_id}/status`
+Check the status of an NFT mint.
+
+---
+
+## Cities
+
+#### `GET /api/v1/cities`
+List all configured cities (public endpoint).
+
+**Response:** `200 OK`
+```json
+{
+  "cities": [
+    {
+      "id": "uuid",
+      "slug": "mumbai",
+      "name": "Mumbai",
+      "country": "India",
+      "timezone": "Asia/Kolkata",
+      "lat_min": 18.89,
+      "lat_max": 19.27,
+      "lng_min": 72.77,
+      "lng_max": 72.98,
+      "center_lat": 19.076,
+      "center_lng": 72.8777,
+      "default_zoom": 12,
+      "areas": ["Andheri", "Bandra", "BKC", "Powai", "..."],
+      "peak_hours": {
+        "morning": { "start": "08:00", "end": "10:30" },
+        "evening": { "start": "17:30", "end": "20:00" }
+      },
+      "active": true
+    }
+  ],
+  "active_count": 1
+}
+```
+
+#### `GET /api/v1/cities/{slug}`
+Get a single city by slug.
+
+#### `POST /api/v1/cities`
+Create a new city configuration (admin).
+
+---
+
 ## Cashout
 
 #### `GET /api/v1/cashout/cryptos`

@@ -16,6 +16,11 @@ from app.services.route_engine.models import Route, RouteAssignment, LocationUpd
 from app.services.scheduler.models import Schedule  # noqa: F401
 from app.services.rewards.models import CoinTransaction, Streak, Badge, UserBadge  # noqa: F401
 from app.services.cashout.models import WalletLink, CashoutRequest  # noqa: F401
+from app.services.challenges.models import Challenge, ChallengeParticipant  # noqa: F401
+from app.services.social.models import Referral, ReferralCode, ShareEvent  # noqa: F401
+from app.services.sponsors.models import Sponsor, RewardPool, PoolPayout  # noqa: F401
+from app.services.nft.models import NFTBadge  # noqa: F401
+from app.services.cities.models import City  # noqa: F401
 
 config = context.config
 

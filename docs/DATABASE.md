@@ -9,23 +9,27 @@ LeadMe uses **PostgreSQL 16** with **async SQLAlchemy 2.0** (via `asyncpg`). Mig
 ```
 users
   │
-  ├── 1:N → route_assignments    (user takes assigned routes)
-  ├── 1:N → schedules            (user's pre-planned commutes)
-  ├── 1:1 → streaks              (one streak tracker per user)
-  ├── 1:N → coin_transactions    (route coins ledger)
-  ├── 1:N → user_badges          (earned achievements)
-  ├── 1:N → wallet_links         (linked crypto wallets)
-  └── 1:N → cashout_requests     (coin → crypto conversions)
+  ├── 1:N → route_assignments       (user takes assigned routes)
+  ├── 1:N → schedules               (user's pre-planned commutes)
+  ├── 1:1 → streaks                 (one streak tracker per user)
+  ├── 1:N → coin_transactions       (route coins ledger)
+  ├── 1:N → user_badges             (earned achievements)
+  ├── 1:N → wallet_links            (linked crypto wallets)
+  ├── 1:N → cashout_requests        (coin → crypto conversions)
+  └── 1:N → challenge_participants  (joined challenges)
 
 routes
-  └── 1:N → route_assignments    (route can be assigned to many users)
+  └── 1:N → route_assignments       (route can be assigned to many users)
 
 route_assignments
-  └── 1:N → location_updates     (GPS points during tracking)
-  └── 1:N → coin_transactions    (reward linked to assignment)
+  └── 1:N → location_updates        (GPS points during tracking)
+  └── 1:N → coin_transactions       (reward linked to assignment)
 
 badges (reference table)
-  └── 1:N → user_badges          (many users can earn each badge)
+  └── 1:N → user_badges             (many users can earn each badge)
+
+challenges
+  └── 1:N → challenge_participants   (users enrolled in challenge)
 ```
 
 ## Tables
@@ -210,6 +214,45 @@ Coin-to-crypto conversion requests and their status.
 | `failure_reason` | VARCHAR(500) | nullable | Error description |
 | `created_at` | TIMESTAMPTZ | auto | Request time |
 | `completed_at` | TIMESTAMPTZ | nullable | Completion time |
+
+### `challenges`
+
+Time-bound challenges that users can join for bonus rewards.
+
+| Column | Type | Constraints | Description |
+|--------|------|------------|-------------|
+| `id` | UUID | PK | Challenge ID |
+| `title` | VARCHAR(200) | | Challenge title |
+| `description` | TEXT | | Full description |
+| `type` | VARCHAR(30) | | weekly/monthly/event/flash |
+| `category` | VARCHAR(30) | default "general" | general/area/peak/monsoon/festival |
+| `goal_type` | VARCHAR(30) | | routes_count/distance_km/peak_routes/area_routes/streak_days |
+| `goal_value` | INT | | Target value to complete |
+| `goal_area` | VARCHAR(100) | nullable | Specific area for area challenges |
+| `reward_coins` | INT | default 0 | Coin reward |
+| `reward_xrp` | FLOAT | default 0.0 | XRP reward |
+| `reward_badge_id` | VARCHAR(50) | nullable | Badge unlocked on completion |
+| `starts_at` | TIMESTAMPTZ | | Challenge start time |
+| `ends_at` | TIMESTAMPTZ | | Challenge end time |
+| `max_participants` | INT | nullable | null = unlimited |
+| `active` | BOOLEAN | default true | Is challenge visible? |
+| `sponsor_id` | UUID | nullable | Linked sponsor pool (Phase 3) |
+| `created_at` | TIMESTAMPTZ | auto | |
+
+### `challenge_participants`
+
+Tracks a user's enrollment and progress in a challenge.
+
+| Column | Type | Constraints | Description |
+|--------|------|------------|-------------|
+| `id` | UUID | PK | |
+| `challenge_id` | UUID | FK → challenges.id, INDEX | |
+| `user_id` | UUID | FK → users.id, INDEX | |
+| `progress` | INT | default 0 | Current progress toward goal |
+| `completed` | BOOLEAN | default false | Hit goal_value? |
+| `reward_claimed` | BOOLEAN | default false | Claimed the reward? |
+| `joined_at` | TIMESTAMPTZ | auto | When user joined |
+| `completed_at` | TIMESTAMPTZ | nullable | When goal was reached |
 
 ## Migrations
 

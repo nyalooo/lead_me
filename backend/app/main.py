@@ -11,6 +11,11 @@ from app.services.route_engine.router import router as route_router
 from app.services.scheduler.router import router as schedule_router
 from app.services.rewards.router import router as reward_router
 from app.services.cashout.router import router as cashout_router
+from app.services.challenges.router import router as challenge_router
+from app.services.social.router import router as social_router
+from app.services.sponsors.router import router as sponsor_router
+from app.services.nft.router import router as nft_router
+from app.services.cities.router import router as city_router
 from app.services.auth.router import router as auth_router
 from app.services.users.router import router as user_router
 
@@ -23,12 +28,18 @@ async def lifespan(app: FastAPI):
     # Seed initial data
     from app.core.database import async_session
     from app.core.seed import seed_all
+    from app.services.cities.service import seed_cities
     async with async_session() as session:
         result = await seed_all(session)
+        cities_added = await seed_cities(session)
         await session.commit()
-        if result.get("badges_inserted"):
+        if result.get("badges_inserted") or cities_added:
             import logging
-            logging.getLogger(__name__).info(f"Seeded {result['badges_inserted']} badges")
+            log = logging.getLogger(__name__)
+            if result.get("badges_inserted"):
+                log.info(f"Seeded {result['badges_inserted']} badges")
+            if cities_added:
+                log.info(f"Seeded {cities_added} cities")
     yield
     # Shutdown: dispose engine
     await engine.dispose()
@@ -56,6 +67,11 @@ app.include_router(route_router, prefix=f"{settings.api_v1_prefix}/routes", tags
 app.include_router(schedule_router, prefix=f"{settings.api_v1_prefix}/schedules", tags=["schedules"])
 app.include_router(reward_router, prefix=f"{settings.api_v1_prefix}/rewards", tags=["rewards"])
 app.include_router(cashout_router, prefix=f"{settings.api_v1_prefix}/cashout", tags=["cashout"])
+app.include_router(challenge_router, prefix=f"{settings.api_v1_prefix}/challenges", tags=["challenges"])
+app.include_router(social_router, prefix=f"{settings.api_v1_prefix}/social", tags=["social"])
+app.include_router(sponsor_router, prefix=f"{settings.api_v1_prefix}/sponsors", tags=["sponsors"])
+app.include_router(nft_router, prefix=f"{settings.api_v1_prefix}/nft", tags=["nft"])
+app.include_router(city_router, prefix=f"{settings.api_v1_prefix}/cities", tags=["cities"])
 app.include_router(user_router, prefix=f"{settings.api_v1_prefix}/users", tags=["users"])
 
 
